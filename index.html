@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Manga-to-Phone Webtoon Reader</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #0d0d0d;
+      color: #f1f2f6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+    header {
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      margin-top: 20px;
+      margin-bottom: 32px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff4757;
+      border: 1px solid rgba(255, 71, 87, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff 0%, #a4b0be 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.subtitle {
+      font-size: 14px;
+      color: #747d8c;
+      line-height: 1.5;
+    }
+    .library {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .manga-card {
+      display: flex;
+      background: #191919;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .manga-card:hover, .manga-card:active {
+      transform: translateY(-2px);
+      border-color: rgba(255, 71, 87, 0.4);
+    }
+    .cover-wrap {
+      width: 110px;
+      min-width: 110px;
+      height: 155px;
+      position: relative;
+      background: #222;
+      overflow: hidden;
+    }
+    .cover-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .card-info {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: #ff4757;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .manga-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .meta-text {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 14px;
+    }
+    .read-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ff4757;
+    }
+    .read-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+      transition: transform 0.2s ease;
+    }
+    .manga-card:hover .read-btn svg {
+      transform: translateX(4px);
+    }
+    footer {
+      margin-top: auto;
+      padding-top: 40px;
+      font-size: 12px;
+      color: #57606f;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge">Mobile Optimized</div>
+    <h1>Manga-to-Phone</h1>
+    <p class="subtitle">Traditional widescreen manga automatically converted into vertical-scrolling smartphone Webtoons.</p>
+  </header>
+
+  <main class="library">
+    <a href="./output/tokyo-ghoul/" class="manga-card">
+      <div class="cover-wrap">
+        <img src="./output/tokyo-ghoul/panels/panel_0001.jpg" alt="Tokyo Ghoul Cover">
+      </div>
+      <div class="card-info">
+        <div class="tag">Chapter 1 • 176 Panels</div>
+        <h2 class="manga-title">Tokyo Ghoul: Chapter 1</h2>
+        <p class="meta-text">Japanese Reading Flow (RTL) • Continuous Vertical Scroll</p>
+        <div class="read-btn">
+          <span>Read on Phone</span>
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </a>
+  </main>
+
+  <footer>
+    <p>Powered by OpenCV &amp; Recursive X-Y Cut Panel Segmentation</p>
+  </footer>
+
+</body>
+</html>
