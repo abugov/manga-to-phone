@@ -19,8 +19,10 @@ Convert traditional desktop/wide-format manga pages into vertical-scrolling, mob
 ## Live Demo (GitHub Pages)
 
 - **Library Catalog:** [https://abugov.github.io/manga-to-phone/](https://abugov.github.io/manga-to-phone/)
-- **Tokyo Ghoul Series Index:** [https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/](https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/)
-- **Chapter 1 Webtoon Reader:** [https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/ch001/](https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/ch001/)
+- **Tokyo Ghoul Series (All 145 Chapters):** [https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/](https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/)
+- **Chapter 0 (Pilot):** [https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/ch000/](https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/ch000/)
+- **Chapter 1 (Tragedy):** [https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/ch001/](https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/ch001/)
+- **Chapter 143 (Finale):** [https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/ch143/](https://abugov.github.io/manga-to-phone/manga/tokyo-ghoul/ch143/)
 
 ---
 
@@ -48,3 +50,9 @@ python convert.py --input-dir downloads/tokyo-ghoul-chapter-001 --manga-slug tok
 python convert.py --input-dir downloads/tokyo-ghoul-chapter-001 --serve
 ```
 This prints a local Wi-Fi URL (e.g. `http://192.168.1.X:8000/`) that you can open right in Safari or Chrome on your phone.
+
+### 5. Batch Convert Entire Series
+```bash
+# Convert an entire series range with incremental Git batch commits
+python batch_convert.py --start 0 --end 143 --batch-size 5
+```
