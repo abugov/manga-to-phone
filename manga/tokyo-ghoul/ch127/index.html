@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
   <title>Tokyo Ghoul - Chapter 127 - Webtoon Reader</title>
   <style>
     * {
@@ -22,6 +22,7 @@
       min-height: 100vh;
       user-select: none;
       -webkit-user-select: none;
+      touch-action: pan-y pinch-zoom;
     }
     /* Top Header Bar - Always Visible */
     header {
@@ -141,18 +142,26 @@
       width: 100%;
       height: auto;
       display: block;
-      cursor: zoom-in;
+      touch-action: pan-y pinch-zoom;
       transition: transform 0.25s ease, max-width 0.25s ease;
       border-radius: 2px;
     }
-    /* Wide panel rotation mode (90 degrees landscape for phone tilting) */
+    /* Wide panel rotation mode (-90 degrees counter-clockwise for phone tilting) */
     body.rotate-wide-mode .panel-wrapper[data-wide="true"] {
-      padding: 60px 0;
+      height: min(100vw, 760px);
+      min-height: min(100vw, 760px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 24px 0;
       overflow: visible;
     }
     body.rotate-wide-mode .panel-wrapper[data-wide="true"] .webtoon-panel {
-      transform: rotate(90deg) scale(1.15);
-      cursor: pointer;
+      transform: rotate(-90deg);
+      transform-origin: center center;
+      width: min(100vw, 760px);
+      height: auto;
+      max-width: none;
     }
     /* End of Chapter Section */
     .chapter-end {
@@ -232,43 +241,6 @@
       pointer-events: none;
       cursor: default;
     }
-    /* Zoom Lightbox Modal */
-    #zoomModal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.95);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      overflow: auto;
-      touch-action: pan-x pan-y pinch-zoom;
-    }
-    #zoomModal.active {
-      display: flex;
-    }
-    #zoomImage {
-      max-width: 98vw;
-      max-height: 98vh;
-      object-fit: contain;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
-      border-radius: 4px;
-      cursor: zoom-out;
-    }
-    .zoom-hint {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      background: rgba(30, 30, 30, 0.8);
-      color: #fff;
-      font-size: 12px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
@@ -297,7 +269,7 @@
   </div>
 
   <main id="reader">
-    <div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="1" loading="lazy" src="panels/panel_0001.webp" alt="Panel 1" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="2" loading="lazy" src="panels/panel_0002.webp" alt="Panel 2" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="3" loading="lazy" src="panels/panel_0003.webp" alt="Panel 3" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="4" loading="lazy" src="panels/panel_0004.webp" alt="Panel 4" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="5" loading="lazy" src="panels/panel_0005.webp" alt="Panel 5" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="6" loading="lazy" src="panels/panel_0006.webp" alt="Panel 6" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="7" loading="lazy" src="panels/panel_0007.webp" alt="Panel 7" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="8" loading="lazy" src="panels/panel_0008.webp" alt="Panel 8" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="9" loading="lazy" src="panels/panel_0009.webp" alt="Panel 9" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="10" loading="lazy" src="panels/panel_0010.webp" alt="Panel 10" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="11" loading="lazy" src="panels/panel_0011.webp" alt="Panel 11" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="12" loading="lazy" src="panels/panel_0012.webp" alt="Panel 12" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="13" loading="lazy" src="panels/panel_0013.webp" alt="Panel 13" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="14" loading="lazy" src="panels/panel_0014.webp" alt="Panel 14" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="15" loading="lazy" src="panels/panel_0015.webp" alt="Panel 15" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="16" loading="lazy" src="panels/panel_0016.webp" alt="Panel 16" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="17" loading="lazy" src="panels/panel_0017.webp" alt="Panel 17" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="18" loading="lazy" src="panels/panel_0018.webp" alt="Panel 18" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="19" loading="lazy" src="panels/panel_0019.webp" alt="Panel 19" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="20" loading="lazy" src="panels/panel_0020.webp" alt="Panel 20" onclick="openZoomModal(this.src)"></div>
+    <div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="1" loading="lazy" src="panels/panel_0001.webp" alt="Panel 1"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="2" loading="lazy" src="panels/panel_0002.webp" alt="Panel 2"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="3" loading="lazy" src="panels/panel_0003.webp" alt="Panel 3"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="4" loading="lazy" src="panels/panel_0004.webp" alt="Panel 4"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="5" loading="lazy" src="panels/panel_0005.webp" alt="Panel 5"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="6" loading="lazy" src="panels/panel_0006.webp" alt="Panel 6"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="7" loading="lazy" src="panels/panel_0007.webp" alt="Panel 7"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="8" loading="lazy" src="panels/panel_0008.webp" alt="Panel 8"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="9" loading="lazy" src="panels/panel_0009.webp" alt="Panel 9"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="10" loading="lazy" src="panels/panel_0010.webp" alt="Panel 10"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="11" loading="lazy" src="panels/panel_0011.webp" alt="Panel 11"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="12" loading="lazy" src="panels/panel_0012.webp" alt="Panel 12"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="13" loading="lazy" src="panels/panel_0013.webp" alt="Panel 13"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="14" loading="lazy" src="panels/panel_0014.webp" alt="Panel 14"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="15" loading="lazy" src="panels/panel_0015.webp" alt="Panel 15"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="16" loading="lazy" src="panels/panel_0016.webp" alt="Panel 16"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="17" loading="lazy" src="panels/panel_0017.webp" alt="Panel 17"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="18" loading="lazy" src="panels/panel_0018.webp" alt="Panel 18"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="19" loading="lazy" src="panels/panel_0019.webp" alt="Panel 19"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="20" loading="lazy" src="panels/panel_0020.webp" alt="Panel 20"></div>
     
     <div class="chapter-end">
       <h3>End of Chapter 127</h3>
@@ -314,19 +286,11 @@
     <a class="nav-btn primary " href="../ch128/">Next Chapter ›</a>
   </footer>
 
-  <!-- Tap-to-Zoom Modal -->
-  <div id="zoomModal" onclick="closeZoomModal()">
-    <div class="zoom-hint">Tap anywhere to close • Pinch to zoom</div>
-    <img id="zoomImage" src="" alt="Zoomed Panel">
-  </div>
-
   <script>
     const progressBar = document.getElementById('progressBar');
     const counter = document.getElementById('counter');
     const panels = document.querySelectorAll('.webtoon-panel');
     const totalPanels = 20;
-    const zoomModal = document.getElementById('zoomModal');
-    const zoomImage = document.getElementById('zoomImage');
     const rotateToggle = document.getElementById('rotateToggle');
 
     // Toggle 90-degree rotation for wide panels
@@ -335,16 +299,6 @@
       rotateWideMode = !rotateWideMode;
       document.body.classList.toggle('rotate-wide-mode', rotateWideMode);
       rotateToggle.classList.toggle('active', rotateWideMode);
-    }
-
-    // Lightbox Zoom
-    function openZoomModal(src) {
-      zoomImage.src = src;
-      zoomModal.classList.add('active');
-    }
-    function closeZoomModal() {
-      zoomModal.classList.remove('active');
-      zoomImage.src = '';
     }
 
     // Scroll progress & panel counter
