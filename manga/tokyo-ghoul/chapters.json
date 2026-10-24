@@ -502,5 +502,35 @@
     "title": "Chapter 82",
     "slug": "ch082",
     "panel_count": 63
+  },
+  {
+    "number": 83.0,
+    "title": "Chapter 83",
+    "slug": "ch083",
+    "panel_count": 60
+  },
+  {
+    "number": 84.0,
+    "title": "Chapter 84",
+    "slug": "ch084",
+    "panel_count": 78
+  },
+  {
+    "number": 85.0,
+    "title": "Chapter 85",
+    "slug": "ch085",
+    "panel_count": 38
+  },
+  {
+    "number": 86.0,
+    "title": "Chapter 86",
+    "slug": "ch086",
+    "panel_count": 60
+  },
+  {
+    "number": 87.0,
+    "title": "Chapter 87",
+    "slug": "ch087",
+    "panel_count": 54
   }
 ]
