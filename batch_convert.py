@@ -188,14 +188,15 @@ def git_commit_and_push(commit_msg: str, push: bool = True):
     
     if push:
         print("    [Git] Pushing to origin main...")
-        for attempt in range(3):
+        for attempt in range(4):
             res = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True)
             if res.returncode == 0:
                 print("    [Git] Push successful!")
                 return True
-            print(f"    [Git] Push attempt {attempt+1} failed: {res.stderr.strip()}. Retrying...")
+            print(f"    [Git] Push attempt {attempt+1} failed: {res.stderr.strip()}. Pulling rebase and retrying...")
+            subprocess.run(["git", "pull", "--rebase", "origin", "main"], capture_output=True)
             time.sleep(2)
-        print("    [!] Warning: Push failed after 3 attempts.")
+        print("    [!] Warning: Push failed after 4 attempts.")
         return False
     return True
 
@@ -205,8 +206,8 @@ def main():
     parser.add_argument("--end", type=float, default=143.0, help="Ending chapter number (e.g. 143)")
     parser.add_argument("--batch-size", type=int, default=5, help="Number of chapters per git commit & push (default: 5)")
     parser.add_argument("--no-push", action="store_true", help="Skip git push")
-    parser.add_argument("--target-width", type=int, default=800, help="Webtoon panel target width (default: 800)")
-    parser.add_argument("--quality", type=int, default=78, help="WebP quality (default: 78)")
+    parser.add_argument("--target-width", type=int, default=750, help="Webtoon panel target width (default: 750)")
+    parser.add_argument("--quality", type=int, default=75, help="WebP quality (default: 75)")
     parser.add_argument("--workers", type=int, default=5, help="Concurrent image download workers (default: 5)")
     parser.add_argument("--force", action="store_true", help="Re-convert existing chapters")
     args = parser.parse_args()
