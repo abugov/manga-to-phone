@@ -772,5 +772,35 @@
     "title": "Chapter 127",
     "slug": "ch127",
     "panel_count": 20
+  },
+  {
+    "number": 128.0,
+    "title": "Chapter 128",
+    "slug": "ch128",
+    "panel_count": 37
+  },
+  {
+    "number": 129.0,
+    "title": "Chapter 129",
+    "slug": "ch129",
+    "panel_count": 32
+  },
+  {
+    "number": 130.0,
+    "title": "Chapter 130",
+    "slug": "ch130",
+    "panel_count": 52
+  },
+  {
+    "number": 131.0,
+    "title": "Chapter 131",
+    "slug": "ch131",
+    "panel_count": 28
+  },
+  {
+    "number": 132.0,
+    "title": "Chapter 132",
+    "slug": "ch132",
+    "panel_count": 75
   }
 ]
