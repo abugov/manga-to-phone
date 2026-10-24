@@ -1,4 +1,5 @@
 import os
+import glob
 import cv2
 import numpy as np
 from PIL import Image
@@ -23,6 +24,12 @@ class WebtoonBuilder:
         os.makedirs(chapter_dir, exist_ok=True)
         panels_dir = os.path.join(chapter_dir, "panels")
         os.makedirs(panels_dir, exist_ok=True)
+        # Clean any existing panel files to prevent stale panels
+        for old_f in glob.glob(os.path.join(panels_dir, "*")):
+            try:
+                os.remove(old_f)
+            except Exception:
+                pass
         
         # 1. Save panels as WebP
         panel_records = []
@@ -125,7 +132,7 @@ class WebtoonBuilder:
             cls_str = " ".join(classes)
             panels_html.append(
                 f'<div class="panel-wrapper" data-wide="{str(p["is_wide"]).lower()}">'
-                f'<img class="{cls_str}" data-idx="{p["idx"]}" loading="lazy" src="{p["src"]}" alt="Panel {p["idx"]}" onclick="openZoomModal(this.src)">'
+                f'<img class="{cls_str}" data-idx="{p["idx"]}" loading="lazy" src="{p["src"]}" alt="Panel {p["idx"]}">'
                 f'</div>'
             )
             
@@ -142,7 +149,7 @@ class WebtoonBuilder:
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
   <title>{manga_title} - {chapter_title} - Webtoon Reader</title>
   <style>
     * {{
@@ -162,6 +169,7 @@ class WebtoonBuilder:
       min-height: 100vh;
       user-select: none;
       -webkit-user-select: none;
+      touch-action: pan-y pinch-zoom;
     }}
     /* Top Header Bar - Always Visible */
     header {{
@@ -281,18 +289,26 @@ class WebtoonBuilder:
       width: 100%;
       height: auto;
       display: block;
-      cursor: zoom-in;
+      touch-action: pan-y pinch-zoom;
       transition: transform 0.25s ease, max-width 0.25s ease;
       border-radius: 2px;
     }}
-    /* Wide panel rotation mode (90 degrees landscape for phone tilting) */
+    /* Wide panel rotation mode (-90 degrees counter-clockwise for phone tilting) */
     body.rotate-wide-mode .panel-wrapper[data-wide="true"] {{
-      padding: 60px 0;
+      height: min(100vw, 760px);
+      min-height: min(100vw, 760px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 24px 0;
       overflow: visible;
     }}
     body.rotate-wide-mode .panel-wrapper[data-wide="true"] .webtoon-panel {{
-      transform: rotate(90deg) scale(1.15);
-      cursor: pointer;
+      transform: rotate(-90deg);
+      transform-origin: center center;
+      width: min(100vw, 760px);
+      height: auto;
+      max-width: none;
     }}
     /* End of Chapter Section */
     .chapter-end {{
@@ -372,43 +388,6 @@ class WebtoonBuilder:
       pointer-events: none;
       cursor: default;
     }}
-    /* Zoom Lightbox Modal */
-    #zoomModal {{
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.95);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      overflow: auto;
-      touch-action: pan-x pan-y pinch-zoom;
-    }}
-    #zoomModal.active {{
-      display: flex;
-    }}
-    #zoomImage {{
-      max-width: 98vw;
-      max-height: 98vh;
-      object-fit: contain;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
-      border-radius: 4px;
-      cursor: zoom-out;
-    }}
-    .zoom-hint {{
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      background: rgba(30, 30, 30, 0.8);
-      color: #fff;
-      font-size: 12px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      pointer-events: none;
-    }}
   </style>
 </head>
 <body>
@@ -454,19 +433,11 @@ class WebtoonBuilder:
     <a class="nav-btn primary {next_disabled}" href="{next_href}">Next Chapter ›</a>
   </footer>
 
-  <!-- Tap-to-Zoom Modal -->
-  <div id="zoomModal" onclick="closeZoomModal()">
-    <div class="zoom-hint">Tap anywhere to close • Pinch to zoom</div>
-    <img id="zoomImage" src="" alt="Zoomed Panel">
-  </div>
-
   <script>
     const progressBar = document.getElementById('progressBar');
     const counter = document.getElementById('counter');
     const panels = document.querySelectorAll('.webtoon-panel');
     const totalPanels = {total};
-    const zoomModal = document.getElementById('zoomModal');
-    const zoomImage = document.getElementById('zoomImage');
     const rotateToggle = document.getElementById('rotateToggle');
 
     // Toggle 90-degree rotation for wide panels
@@ -475,16 +446,6 @@ class WebtoonBuilder:
       rotateWideMode = !rotateWideMode;
       document.body.classList.toggle('rotate-wide-mode', rotateWideMode);
       rotateToggle.classList.toggle('active', rotateWideMode);
-    }}
-
-    // Lightbox Zoom
-    function openZoomModal(src) {{
-      zoomImage.src = src;
-      zoomModal.classList.add('active');
-    }}
-    function closeZoomModal() {{
-      zoomModal.classList.remove('active');
-      zoomImage.src = '';
     }}
 
     // Scroll progress & panel counter
