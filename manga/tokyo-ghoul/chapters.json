@@ -562,5 +562,35 @@
     "title": "Chapter 92",
     "slug": "ch092",
     "panel_count": 42
+  },
+  {
+    "number": 93.0,
+    "title": "Chapter 93",
+    "slug": "ch093",
+    "panel_count": 58
+  },
+  {
+    "number": 94.0,
+    "title": "Chapter 94",
+    "slug": "ch094",
+    "panel_count": 63
+  },
+  {
+    "number": 95.0,
+    "title": "Chapter 95",
+    "slug": "ch095",
+    "panel_count": 41
+  },
+  {
+    "number": 96.0,
+    "title": "Chapter 96",
+    "slug": "ch096",
+    "panel_count": 57
+  },
+  {
+    "number": 97.0,
+    "title": "Chapter 97",
+    "slug": "ch097",
+    "panel_count": 43
   }
 ]

@@ -1,0 +1,23 @@
+[
+  {
+    "page": "page_006.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.65, gutters=6); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_007.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.63, gutters=7); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_012.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  }
+]
