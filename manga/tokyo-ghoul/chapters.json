@@ -442,5 +442,35 @@
     "title": "Chapter 72",
     "slug": "ch072",
     "panel_count": 21
+  },
+  {
+    "number": 73.0,
+    "title": "Chapter 73",
+    "slug": "ch073",
+    "panel_count": 37
+  },
+  {
+    "number": 74.0,
+    "title": "Chapter 74",
+    "slug": "ch074",
+    "panel_count": 45
+  },
+  {
+    "number": 75.0,
+    "title": "Chapter 75",
+    "slug": "ch075",
+    "panel_count": 52
+  },
+  {
+    "number": 76.0,
+    "title": "Chapter 76",
+    "slug": "ch076",
+    "panel_count": 42
+  },
+  {
+    "number": 77.0,
+    "title": "Chapter 77",
+    "slug": "ch077",
+    "panel_count": 48
   }
 ]
