@@ -52,5 +52,35 @@
     "title": "Chapter 8",
     "slug": "ch008",
     "panel_count": 19
+  },
+  {
+    "number": 9.0,
+    "title": "Chapter 9",
+    "slug": "ch009",
+    "panel_count": 62
+  },
+  {
+    "number": 10.0,
+    "title": "Chapter 10",
+    "slug": "ch010",
+    "panel_count": 147
+  },
+  {
+    "number": 11.0,
+    "title": "Chapter 11",
+    "slug": "ch011",
+    "panel_count": 71
+  },
+  {
+    "number": 12.0,
+    "title": "Chapter 12",
+    "slug": "ch012",
+    "panel_count": 72
+  },
+  {
+    "number": 13.0,
+    "title": "Chapter 13",
+    "slug": "ch013",
+    "panel_count": 79
   }
 ]
