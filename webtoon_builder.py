@@ -52,8 +52,26 @@ class WebtoonBuilder:
                     "idx": idx + 1
                 })
                 
-        # 2. Generate Chapter HTML Reader
-        self._generate_chapter_reader(chapter_dir, manga_title, chapter_title, chapter_num, panel_records)
+        # 2. Check for adjacent chapters (prev / next)
+        manga_parent_dir = os.path.dirname(chapter_dir)
+        has_prev = (chapter_num > 1) and os.path.exists(os.path.join(manga_parent_dir, f"ch{chapter_num - 1:03d}"))
+        has_next = os.path.exists(os.path.join(manga_parent_dir, f"ch{chapter_num + 1:03d}"))
+        
+        prev_href = f"../ch{chapter_num - 1:03d}/" if has_prev else "#"
+        next_href = f"../ch{chapter_num + 1:03d}/" if has_next else "#"
+        
+        # 3. Generate Chapter HTML Reader
+        self._generate_chapter_reader(
+            chapter_dir=chapter_dir,
+            manga_title=manga_title,
+            chapter_title=chapter_title,
+            chapter_num=chapter_num,
+            panels=panel_records,
+            has_prev=has_prev,
+            prev_href=prev_href,
+            has_next=has_next,
+            next_href=next_href
+        )
         
         # Calculate saved size
         total_size_mb = sum(os.path.getsize(os.path.join(panels_dir, os.path.basename(p["src"]))) for p in panel_records) / (1024 * 1024)
@@ -62,7 +80,18 @@ class WebtoonBuilder:
         print(f"    - Interactive reader: {os.path.join(chapter_dir, 'index.html')}")
         return panel_records
 
-    def _generate_chapter_reader(self, chapter_dir, manga_title, chapter_title, chapter_num, panels):
+    def _generate_chapter_reader(
+        self,
+        chapter_dir: str,
+        manga_title: str,
+        chapter_title: str,
+        chapter_num: int,
+        panels: List[Dict[str, Any]],
+        has_prev: bool,
+        prev_href: str,
+        has_next: bool,
+        next_href: str
+    ):
         total = len(panels)
         
         # Build panel HTML elements
@@ -80,6 +109,15 @@ class WebtoonBuilder:
                 f'<img class="{cls_str}" data-idx="{p["idx"]}" loading="lazy" src="{p["src"]}" alt="Panel {p["idx"]}" onclick="openZoomModal(this.src)">'
                 f'</div>'
             )
+            
+        prev_disabled = "" if has_prev else "disabled"
+        next_disabled = "" if has_next else "disabled"
+        
+        # End of chapter navigation button
+        if has_next:
+            end_btn_html = f'<a href="{next_href}" class="end-nav-btn primary">Next Chapter ➔</a>'
+        else:
+            end_btn_html = f'<a href="../index.html" class="end-nav-btn">Back to Chapters</a>'
             
         html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -106,14 +144,14 @@ class WebtoonBuilder:
       user-select: none;
       -webkit-user-select: none;
     }}
-    /* Top Header Bar */
+    /* Top Header Bar - Always Visible */
     header {{
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       height: 52px;
-      background: rgba(14, 14, 14, 0.94);
+      background: rgba(14, 14, 14, 0.96);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -122,10 +160,6 @@ class WebtoonBuilder:
       justify-content: space-between;
       padding: 0 12px;
       z-index: 100;
-      transition: transform 0.25s ease;
-    }}
-    header.hidden {{
-      transform: translateY(-100%);
     }}
     .back-btn {{
       color: #ff4757;
@@ -210,8 +244,8 @@ class WebtoonBuilder:
     #reader {{
       width: 100%;
       max-width: 760px;
-      margin-top: 52px;
-      margin-bottom: 60px;
+      margin-top: 56px;
+      margin-bottom: 74px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -243,49 +277,81 @@ class WebtoonBuilder:
     }}
     /* End of Chapter Section */
     .chapter-end {{
-      padding: 50px 20px 90px 20px;
+      padding: 50px 20px 60px 20px;
       text-align: center;
       color: #777;
       font-size: 14px;
+      width: 100%;
+      max-width: 400px;
     }}
     .chapter-end h3 {{
       color: #fff;
       font-size: 18px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }}
-    /* Bottom Navigation Bar */
+    .end-actions {{
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }}
+    .end-nav-btn {{
+      background: #222;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: inline-block;
+    }}
+    .end-nav-btn.primary {{
+      background: #ff4757;
+      border-color: #ff4757;
+    }}
+    /* Bottom Chapter Navigation Bar - Always Visible */
     footer {{
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 52px;
-      background: rgba(14, 14, 14, 0.94);
+      height: 56px;
+      background: rgba(14, 14, 14, 0.96);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
-      justify-content: space-around;
+      justify-content: space-between;
+      padding: 0 16px;
       z-index: 100;
-      transition: transform 0.25s ease;
-    }}
-    footer.hidden {{
-      transform: translateY(100%);
     }}
     .nav-btn {{
-      background: none;
-      border: none;
-      color: #ccc;
+      background: #1e1e1e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      text-decoration: none;
       font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      padding: 8px 16px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
       border-radius: 8px;
     }}
     .nav-btn:active {{
-      background: rgba(255, 255, 255, 0.1);
+      background: #2a2a2a;
+    }}
+    .nav-btn.primary {{
+      background: #ff4757;
+      border-color: #ff4757;
       color: #fff;
+    }}
+    .nav-btn.disabled {{
+      opacity: 0.3;
+      pointer-events: none;
+      cursor: default;
     }}
     /* Zoom Lightbox Modal */
     #zoomModal {{
@@ -357,13 +423,16 @@ class WebtoonBuilder:
     <div class="chapter-end">
       <h3>End of {chapter_title}</h3>
       <p>Formatted for Mobile Phone Webtoon Viewing</p>
+      <div class="end-actions">
+        {end_btn_html}
+      </div>
     </div>
   </main>
 
   <footer id="footer">
-    <button class="nav-btn" onclick="window.scrollTo({{ top: 0, behavior: 'smooth' }})">Top</button>
-    <button class="nav-btn" onclick="toggleBars()">Toggle UI</button>
-    <button class="nav-btn" onclick="window.scrollTo({{ top: document.body.scrollHeight, behavior: 'smooth' }})">Bottom</button>
+    <a class="nav-btn {prev_disabled}" href="{prev_href}">‹ Prev Chapter</a>
+    <a class="nav-btn" href="../index.html">📑 All Chapters</a>
+    <a class="nav-btn primary {next_disabled}" href="{next_href}">Next Chapter ›</a>
   </footer>
 
   <!-- Tap-to-Zoom Modal -->
@@ -373,8 +442,6 @@ class WebtoonBuilder:
   </div>
 
   <script>
-    const header = document.getElementById('header');
-    const footer = document.getElementById('footer');
     const progressBar = document.getElementById('progressBar');
     const counter = document.getElementById('counter');
     const panels = document.querySelectorAll('.webtoon-panel');
@@ -382,14 +449,6 @@ class WebtoonBuilder:
     const zoomModal = document.getElementById('zoomModal');
     const zoomImage = document.getElementById('zoomImage');
     const rotateToggle = document.getElementById('rotateToggle');
-
-    // UI Bars Auto-hide on scroll
-    let uiVisible = true;
-    function toggleBars() {{
-      uiVisible = !uiVisible;
-      header.classList.toggle('hidden', !uiVisible);
-      footer.classList.toggle('hidden', !uiVisible);
-    }}
 
     // Toggle 90-degree rotation for wide panels
     let rotateWideMode = false;
