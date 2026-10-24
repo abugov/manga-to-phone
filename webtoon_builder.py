@@ -5,7 +5,7 @@ from PIL import Image
 from typing import List, Dict, Any
 
 class WebtoonBuilder:
-    def __init__(self, target_width: int = 800, webp_quality: int = 82):
+    def __init__(self, target_width: int = 800, webp_quality: int = 78):
         self.target_width = target_width
         self.webp_quality = webp_quality
 
@@ -15,8 +15,10 @@ class WebtoonBuilder:
         chapter_dir: str,
         manga_title: str = "Tokyo Ghoul",
         chapter_title: str = "Chapter 1: Tragedy",
-        chapter_num: int = 1,
-        manga_slug: str = "tokyo-ghoul"
+        chapter_num: Any = 1,
+        manga_slug: str = "tokyo-ghoul",
+        prev_href: str = None,
+        next_href: str = None
     ):
         os.makedirs(chapter_dir, exist_ok=True)
         panels_dir = os.path.join(chapter_dir, "panels")
@@ -54,11 +56,28 @@ class WebtoonBuilder:
                 
         # 2. Check for adjacent chapters (prev / next)
         manga_parent_dir = os.path.dirname(chapter_dir)
-        has_prev = (chapter_num > 1) and os.path.exists(os.path.join(manga_parent_dir, f"ch{chapter_num - 1:03d}"))
-        has_next = os.path.exists(os.path.join(manga_parent_dir, f"ch{chapter_num + 1:03d}"))
-        
-        prev_href = f"../ch{chapter_num - 1:03d}/" if has_prev else "#"
-        next_href = f"../ch{chapter_num + 1:03d}/" if has_next else "#"
+        if prev_href is None:
+            # Fallback auto-detection
+            try:
+                c_num_int = int(chapter_num)
+                has_prev = (c_num_int > 0) and os.path.exists(os.path.join(manga_parent_dir, f"ch{c_num_int - 1:03d}"))
+                prev_href = f"../ch{c_num_int - 1:03d}/" if has_prev else "#"
+            except (ValueError, TypeError):
+                has_prev = False
+                prev_href = "#"
+        else:
+            has_prev = bool(prev_href and prev_href != "#")
+            
+        if next_href is None:
+            try:
+                c_num_int = int(chapter_num)
+                has_next = os.path.exists(os.path.join(manga_parent_dir, f"ch{c_num_int + 1:03d}"))
+                next_href = f"../ch{c_num_int + 1:03d}/" if has_next else "#"
+            except (ValueError, TypeError):
+                has_next = False
+                next_href = "#"
+        else:
+            has_next = bool(next_href and next_href != "#")
         
         # 3. Generate Chapter HTML Reader
         self._generate_chapter_reader(
@@ -504,10 +523,12 @@ class WebtoonBuilder:
         
         chapter_rows = []
         for ch in chapters:
+            cnum = ch["number"]
+            ch_num_display = f"{int(cnum):02d}" if isinstance(cnum, int) or (isinstance(cnum, float) and cnum.is_integer()) else f"{cnum}"
             chapter_rows.append(
                 f'<a href="./{ch["slug"]}/" class="chapter-card">'
                 f'  <div class="ch-left">'
-                f'    <div class="ch-num">CH. {ch["number"]:02d}</div>'
+                f'    <div class="ch-num">CH. {ch_num_display}</div>'
                 f'    <div class="ch-info">'
                 f'      <div class="ch-title">{ch["title"]}</div>'
                 f'      <div class="ch-meta">{ch["panel_count"]} Mobile Panels • Webtoon Format</div>'

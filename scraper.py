@@ -20,6 +20,8 @@ def scrape_chapter_images(chapter_url, output_dir="raw_pages"):
     img_urls = []
     for img in soup.find_all("img"):
         src = img.get("data-src") or img.get("src")
+        if src:
+            src = src.strip()
         if src and re.search(r'\.(jpg|jpeg|png|webp)', src, re.I):
             # Filter out icons, logos, avatars
             if any(x in src.lower() for x in ["icon", "logo", "favicon", "avatar", "banner"]):

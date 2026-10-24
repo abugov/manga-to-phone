@@ -32,6 +32,8 @@ def download_chapter_images(url: str, dest_dir: str):
     img_urls = []
     for img in soup.find_all("img"):
         src = img.get("data-src") or img.get("src")
+        if src:
+            src = src.strip()
         if src and re.search(r'\.(jpg|jpeg|png|webp)', src, re.I):
             if any(x in src.lower() for x in ["icon", "logo", "favicon", "avatar", "banner", "advert"]):
                 continue
@@ -42,19 +44,27 @@ def download_chapter_images(url: str, dest_dir: str):
                 
     print(f"[*] Found {len(img_urls)} chapter pages online.")
     downloaded = []
+    s = requests.Session()
+    s.headers.update(headers)
     for idx, u in enumerate(img_urls):
         ext = os.path.splitext(urlparse(u).path)[1] or ".jpg"
         out_path = os.path.join(dest_dir, f"page_{idx+1:03d}{ext}")
         if not os.path.exists(out_path):
             print(f"  Downloading page {idx+1}/{len(img_urls)}...", end="\r", flush=True)
-            try:
-                r = requests.get(u, headers=headers, timeout=20)
-                if r.status_code == 200:
-                    with open(out_path, "wb") as f:
-                        f.write(r.content)
-                    downloaded.append(out_path)
-            except Exception as e:
-                print(f"\n  [!] Failed to download {u}: {e}")
+            for attempt in range(3):
+                try:
+                    r = s.get(u, timeout=20)
+                    if r.status_code == 200:
+                        with open(out_path, "wb") as f:
+                            f.write(r.content)
+                        downloaded.append(out_path)
+                        break
+                    else:
+                        time.sleep(0.5)
+                except Exception as e:
+                    if attempt == 2:
+                        print(f"\n  [!] Failed to download {u}: {e}")
+                    time.sleep(0.5)
         else:
             downloaded.append(out_path)
             

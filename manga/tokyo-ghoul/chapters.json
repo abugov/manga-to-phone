@@ -1,0 +1,26 @@
+[
+  {
+    "number": 0.0,
+    "title": "Chapter 0: Rize",
+    "slug": "ch000",
+    "panel_count": 181
+  },
+  {
+    "number": 1.0,
+    "title": "Chapter 1",
+    "slug": "ch001",
+    "panel_count": 144
+  },
+  {
+    "number": 2.0,
+    "title": "Chapter 2",
+    "slug": "ch002",
+    "panel_count": 140
+  },
+  {
+    "number": 3.0,
+    "title": "Chapter 3",
+    "slug": "ch003",
+    "panel_count": 90
+  }
+]
