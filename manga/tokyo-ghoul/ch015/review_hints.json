@@ -1,0 +1,37 @@
+[
+  {
+    "page": "page_001.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.83, gutters=0); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_004.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_005.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_019.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_020.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Solid dark/blank scene transition page; kept as full_page.",
+    "confidence": "high"
+  }
+]

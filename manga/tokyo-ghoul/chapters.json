@@ -82,5 +82,35 @@
     "title": "Chapter 13",
     "slug": "ch013",
     "panel_count": 79
+  },
+  {
+    "number": 14.0,
+    "title": "Chapter 14",
+    "slug": "ch014",
+    "panel_count": 72
+  },
+  {
+    "number": 15.0,
+    "title": "Chapter 15",
+    "slug": "ch015",
+    "panel_count": 56
+  },
+  {
+    "number": 16.0,
+    "title": "Chapter 16",
+    "slug": "ch016",
+    "panel_count": 56
+  },
+  {
+    "number": 17.0,
+    "title": "Chapter 17",
+    "slug": "ch017",
+    "panel_count": 51
+  },
+  {
+    "number": 18.0,
+    "title": "Chapter 18",
+    "slug": "ch018",
+    "panel_count": 78
   }
 ]
