@@ -262,5 +262,35 @@
     "title": "Chapter 43",
     "slug": "ch043",
     "panel_count": 24
+  },
+  {
+    "number": 44.0,
+    "title": "Chapter 44",
+    "slug": "ch044",
+    "panel_count": 39
+  },
+  {
+    "number": 45.0,
+    "title": "Chapter 45",
+    "slug": "ch045",
+    "panel_count": 23
+  },
+  {
+    "number": 46.0,
+    "title": "Chapter 46",
+    "slug": "ch046",
+    "panel_count": 42
+  },
+  {
+    "number": 46.5,
+    "title": "Chapter 46.5",
+    "slug": "ch046_5",
+    "panel_count": 80
+  },
+  {
+    "number": 47.0,
+    "title": "Chapter 47",
+    "slug": "ch047",
+    "panel_count": 51
   }
 ]
