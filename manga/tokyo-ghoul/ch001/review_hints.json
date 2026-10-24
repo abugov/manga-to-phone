@@ -1,0 +1,149 @@
+[
+  {
+    "page": "page_001.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_002.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_003.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.83, gutters=12); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_006.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Solid dark/blank scene transition page; kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_030.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_031.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_032.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_033.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_034.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_035.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_036.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_037.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_038.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_039.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_041.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_042.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_043.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_044.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_045.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_046.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.85, gutters=0); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_047.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Solid dark/blank scene transition page; kept as full_page.",
+    "confidence": "high"
+  }
+]

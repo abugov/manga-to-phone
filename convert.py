@@ -2,10 +2,12 @@
 """
 Manga-to-Phone Converter
 Converts desktop/wide-format manga pages into vertical-scrolling, mobile-friendly Webtoon format.
+Outputs structured review hints for LLM / Developer inspection on non-trivial cuts.
 """
 
 import argparse
 import glob
+import json
 import os
 import re
 import sys
@@ -101,26 +103,43 @@ def main():
         image_files = image_files[:args.max_pages]
         print(f"[*] Processing limited to first {len(image_files)} pages.")
         
-    # 2. Extract frames
+    # 2. Extract frames & collect review hints
     print(f"\n[*] Extracting distinctive manga frames (Reading Order: {args.order.upper()})...")
     extractor = MangaPanelExtractor(reading_order=args.order)
     
     all_panel_data = []
+    review_hints = []
     start_time = time.time()
     
     for i, img_path in enumerate(image_files):
         print(f"  Processing page {i+1}/{len(image_files)}: {os.path.basename(img_path)}...", end="\r", flush=True)
         try:
-            panels = extractor.extract_panels_from_image(img_path)
+            panels, hint = extractor.extract_panels_from_image(img_path)
             all_panel_data.extend(panels)
+            if hint.get("is_fallback") or hint.get("confidence") != "high":
+                review_hints.append(hint)
         except Exception as e:
             print(f"\n  [!] Error processing {img_path}: {e}")
             
     elapsed = time.time() - start_time
     print(f"\n[+] Extracted {len(all_panel_data)} frames from {len(image_files)} pages in {elapsed:.2f} seconds! (~{elapsed/max(len(image_files),1):.3f}s per page)")
     
-    # 3. Build Webtoon Output in 3-Level Hierarchy
-    # Level 3: manga/<manga_slug>/ch<num:03d>/
+    # 3. Print LLM / Developer Hints Summary
+    if review_hints:
+        print("\n" + "=" * 70)
+        print("💡 [HINTS FOR LLM / DEVELOPER REVIEW]")
+        print(f"{len(review_hints)} page(s) triggered a fallback or required non-trivial handling:")
+        for h in review_hints:
+            status_icon = "⚠️" if h.get("confidence") != "high" else "ℹ️"
+            print(f"  {status_icon} {h['page']}: {h['reason']}")
+        print("\nReview Rule (see CLAUDE.md):")
+        print("  - If the fallback is appropriate (cover, splash, TOC), leave as-is.")
+        print("  - Do NOT vibe-code one-off special cases. Raise any ambiguity to the user.")
+        print("=" * 70 + "\n")
+    else:
+        print("[✓] All pages cut cleanly with high confidence (no hints needed).\n")
+    
+    # 4. Build Webtoon Output in 3-Level Hierarchy
     chapter_slug = f"ch{args.chapter_num:03d}"
     manga_dir = os.path.join("manga", args.manga_slug)
     chapter_dir = os.path.join(manga_dir, chapter_slug)
@@ -135,6 +154,11 @@ def main():
         manga_slug=args.manga_slug
     )
     
+    # Save review hints json
+    hints_path = os.path.join(chapter_dir, "review_hints.json")
+    with open(hints_path, "w", encoding="utf-8") as f:
+        json.dump(review_hints, f, indent=2)
+        
     # Level 2: manga/<manga_slug>/index.html
     cover_rel_path = f"./{chapter_slug}/panels/panel_0001.webp"
     synopsis = "In modern day Tokyo, society lives in fear of Ghouls: mysterious creatures who look exactly like humans yet survive on flesh. Shy college student Ken Kaneki becomes embroiled in this dark world."
@@ -170,7 +194,7 @@ def main():
         manga_list=manga_catalog
     )
     
-    # 4. Optional server
+    # 5. Optional server
     if args.serve:
         import socket
         import http.server

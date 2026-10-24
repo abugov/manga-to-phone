@@ -60,23 +60,15 @@ class MangaPanelExtractor:
             gutters.append((start, len(is_gutter) - 1))
             
         length = mask.shape[0] if axis == 0 else mask.shape[1]
-        # Ignore gutters directly at page borders
         valid = [g for g in gutters if g[0] > 35 and g[1] < length - 35]
         return valid
 
-    def extract_panels_from_image(self, img_path: str) -> List[Dict[str, Any]]:
+    def extract_panels_from_image(self, img_path: str) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Extracts distinctive frames from manga page.
-        Returns a list of dicts:
-        [
-          {
-            "type": "full_page" | "horizontal_frame" | "standard_frame" | "spread",
-            "image": np.ndarray,
-            "aspect": float,
-            "is_wide": bool
-          },
-          ...
-        ]
+        Returns:
+            panels: list of dicts with extracted panel images and metadata
+            hint: dict with confidence, fallback status, and hints for LLM/user
         """
         img = cv2.imread(img_path)
         if img is None:
@@ -84,6 +76,7 @@ class MangaPanelExtractor:
             
         h, w = img.shape[:2]
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        bname = os.path.basename(img_path)
         
         # 1. Check for 2-page spread (w / h > 1.25)
         if (w / float(h)) > 1.25:
@@ -103,27 +96,58 @@ class MangaPanelExtractor:
                     "aspect": aspect,
                     "is_wide": aspect > 1.4
                 })
-            return spread_panels
+            hint = {
+                "page": bname,
+                "status": "trivial",
+                "is_fallback": False,
+                "reason": "2-page spread detected (w/h > 1.25); split into two pages in reading order.",
+                "confidence": "high"
+            }
+            return spread_panels, hint
 
-        # 2. Trim page margins
+        # 2. Check for solid/blank page (like pure black scene transitions)
+        is_all_white = np.mean(gray >= self.white_thresh) > 0.99
+        is_all_dark = np.mean(gray <= 20) > 0.95
+        if is_all_white or is_all_dark:
+            hint = {
+                "page": bname,
+                "status": "fallback",
+                "is_fallback": True,
+                "reason": "Solid dark/blank scene transition page; kept as full_page.",
+                "confidence": "high"
+            }
+            return [{
+                "type": "full_page",
+                "image": img,
+                "aspect": w / float(h),
+                "is_wide": False
+            }], hint
+
+        # 3. Trim page margins
         content_img, content_gray = self._trim_content_bounds(img, gray)
         ch, cw = content_gray.shape[:2]
         
-        # 3. Look for horizontal gutters across content
+        # 4. Look for horizontal gutters across content
         white_mask = (content_gray >= self.white_thresh).astype(np.float32)
         overall_white = np.mean(white_mask)
         valid_h_gutters = self._find_gutters(white_mask, axis=0, min_thickness=self.min_gutter_px, thresh_ratio=self.gutter_ratio)
         
-        # If the page is overwhelmingly white (> 80%, typical of TOC / credits),
-        # or has too many gutters (> 5 gutters means it's a list of text lines, not manga panels):
+        # Check if page is overwhelmingly white or has too many text gutters (TOC/credits)
         if overall_white > 0.80 or len(valid_h_gutters) > 5:
             aspect = cw / float(ch)
+            hint = {
+                "page": bname,
+                "status": "fallback",
+                "is_fallback": True,
+                "reason": f"Table of Contents / text list detected (white ratio={overall_white:.2f}, gutters={len(valid_h_gutters)}); kept as full_page.",
+                "confidence": "high"
+            }
             return [{
                 "type": "full_page",
                 "image": content_img,
                 "aspect": aspect,
                 "is_wide": aspect > 1.4
-            }]
+            }], hint
         
         # Split into horizontal tiers
         tier_slices = []
@@ -135,20 +159,27 @@ class MangaPanelExtractor:
         if ch - curr_y >= self.min_tier_height:
             tier_slices.append((curr_y, ch))
             
-        # If no valid tiers, or only 1 tier, or more than 5 tiers (e.g. TOC/credits/text pages):
-        # Treat as FULL PAGE!
-        if len(tier_slices) < 2 or len(tier_slices) > 5:
+        # If no valid tiers or only 1 tier: Full-page splash/illustration!
+        if len(tier_slices) < 2:
             aspect = cw / float(ch)
+            hint = {
+                "page": bname,
+                "status": "fallback",
+                "is_fallback": True,
+                "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+                "confidence": "high"
+            }
             return [{
                 "type": "full_page",
                 "image": content_img,
                 "aspect": aspect,
                 "is_wide": aspect > 1.4
-            }]
+            }], hint
             
-        # 4. Process each tier
+        # 5. Process each tier
         panels = []
         has_invalid_sliver = False
+        merged_tiers_count = 0
         
         for (ty1, ty2) in tier_slices:
             tier_img = content_img[ty1:ty2, :]
@@ -167,6 +198,7 @@ class MangaPanelExtractor:
                     "aspect": aspect,
                     "is_wide": True
                 })
+                merged_tiers_count += 1
                 continue
                 
             # If there are vertical gutters, split tier into columns
@@ -179,7 +211,7 @@ class MangaPanelExtractor:
             if tw - curr_x >= self.min_panel_width:
                 col_slices.append((curr_x, tw))
                 
-            # Check for invalid thin slivers
+            # Check for thin slivers (false cuts)
             for (cx1, cx2) in col_slices:
                 if (cx2 - cx1) < self.min_panel_width:
                     has_invalid_sliver = True
@@ -204,11 +236,26 @@ class MangaPanelExtractor:
         # If any tier produced invalid slivers, fall back to full page
         if has_invalid_sliver:
             aspect = cw / float(ch)
+            hint = {
+                "page": bname,
+                "status": "fallback",
+                "is_fallback": True,
+                "reason": "Unusual narrow slivers detected (< 110px). Fell back to full_page to avoid cutting artwork.",
+                "confidence": "medium"
+            }
             return [{
                 "type": "full_page",
                 "image": content_img,
                 "aspect": aspect,
                 "is_wide": aspect > 1.4
-            }]
+            }], hint
             
-        return panels
+        # Clean successful multi-panel extraction
+        hint = {
+            "page": bname,
+            "status": "trivial",
+            "is_fallback": False,
+            "reason": f"Clean extraction: {len(tier_slices)} tiers, {len(panels)} panels (wide frames: {merged_tiers_count}).",
+            "confidence": "high"
+        }
+        return panels, hint
