@@ -22,5 +22,35 @@
     "title": "Chapter 3",
     "slug": "ch003",
     "panel_count": 90
+  },
+  {
+    "number": 4.0,
+    "title": "Chapter 4",
+    "slug": "ch004",
+    "panel_count": 84
+  },
+  {
+    "number": 5.0,
+    "title": "Chapter 5",
+    "slug": "ch005",
+    "panel_count": 18
+  },
+  {
+    "number": 6.0,
+    "title": "Chapter 6",
+    "slug": "ch006",
+    "panel_count": 57
+  },
+  {
+    "number": 7.0,
+    "title": "Chapter 7",
+    "slug": "ch007",
+    "panel_count": 59
+  },
+  {
+    "number": 8.0,
+    "title": "Chapter 8",
+    "slug": "ch008",
+    "panel_count": 19
   }
 ]
