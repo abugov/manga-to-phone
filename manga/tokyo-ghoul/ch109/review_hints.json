@@ -1,0 +1,16 @@
+[
+  {
+    "page": "page_019.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.81, gutters=28); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_020.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.78, gutters=24); kept as full_page.",
+    "confidence": "high"
+  }
+]

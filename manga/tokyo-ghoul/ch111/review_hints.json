@@ -1,0 +1,79 @@
+[
+  {
+    "page": "page_004.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_006.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_008.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_009.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_010.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_019.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.89, gutters=5); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_022.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.73, gutters=6); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_025.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.71, gutters=6); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_026.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.84, gutters=16); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_027.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.89, gutters=27); kept as full_page.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_028.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  }
+]

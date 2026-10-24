@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Tokyo Ghoul - Chapter 109 - Webtoon Reader</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #0b0b0b;
+      color: #eaeaea;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    /* Top Header Bar - Always Visible */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background: rgba(14, 14, 14, 0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      z-index: 100;
+    }
+    .back-btn {
+      color: #ff4757;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 8px;
+      border-radius: 6px;
+    }
+    .back-btn:active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .title-area {
+      text-align: center;
+      max-width: 45%;
+      overflow: hidden;
+    }
+    .manga-name {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .chapter-name {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .rotate-toggle {
+      background: #222;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ddd;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .rotate-toggle.active {
+      background: #ff4757;
+      color: #fff;
+      border-color: #ff4757;
+    }
+    .progress-pill {
+      font-size: 11px;
+      font-weight: 600;
+      background: #202020;
+      padding: 5px 8px;
+      border-radius: 8px;
+      color: #aaa;
+    }
+    /* Top Progress Bar */
+    .progress-bar-container {
+      position: fixed;
+      top: 52px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: transparent;
+      z-index: 101;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff6b81, #ff4757);
+      transition: width 0.1s linear;
+    }
+    /* Reader Canvas */
+    #reader {
+      width: 100%;
+      max-width: 760px;
+      margin-top: 56px;
+      margin-bottom: 74px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #0b0b0b;
+    }
+    .panel-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin: 8px 0;
+      position: relative;
+    }
+    .webtoon-panel {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: zoom-in;
+      transition: transform 0.25s ease, max-width 0.25s ease;
+      border-radius: 2px;
+    }
+    /* Wide panel rotation mode (90 degrees landscape for phone tilting) */
+    body.rotate-wide-mode .panel-wrapper[data-wide="true"] {
+      padding: 60px 0;
+      overflow: visible;
+    }
+    body.rotate-wide-mode .panel-wrapper[data-wide="true"] .webtoon-panel {
+      transform: rotate(90deg) scale(1.15);
+      cursor: pointer;
+    }
+    /* End of Chapter Section */
+    .chapter-end {
+      padding: 50px 20px 60px 20px;
+      text-align: center;
+      color: #777;
+      font-size: 14px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .chapter-end h3 {
+      color: #fff;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+    .end-actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    .end-nav-btn {
+      background: #222;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: inline-block;
+    }
+    .end-nav-btn.primary {
+      background: #ff4757;
+      border-color: #ff4757;
+    }
+    /* Bottom Chapter Navigation Bar - Always Visible */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(14, 14, 14, 0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+    }
+    .nav-btn {
+      background: #1e1e1e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+    }
+    .nav-btn:active {
+      background: #2a2a2a;
+    }
+    .nav-btn.primary {
+      background: #ff4757;
+      border-color: #ff4757;
+      color: #fff;
+    }
+    .nav-btn.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+      cursor: default;
+    }
+    /* Zoom Lightbox Modal */
+    #zoomModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      overflow: auto;
+      touch-action: pan-x pan-y pinch-zoom;
+    }
+    #zoomModal.active {
+      display: flex;
+    }
+    #zoomImage {
+      max-width: 98vw;
+      max-height: 98vh;
+      object-fit: contain;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+      border-radius: 4px;
+      cursor: zoom-out;
+    }
+    .zoom-hint {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(30, 30, 30, 0.8);
+      color: #fff;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header id="header">
+    <a href="../index.html" class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Chapters
+    </a>
+
+    <div class="title-area">
+      <div class="manga-name">Tokyo Ghoul</div>
+      <div class="chapter-name">Chapter 109</div>
+    </div>
+
+    <div class="controls">
+      <button id="rotateToggle" class="rotate-toggle" onclick="toggleWideRotation()" title="Rotate wide panels 90 degrees for landscape reading">
+        <span>🔄 90°</span>
+      </button>
+      <div class="progress-pill" id="counter">1/84</div>
+    </div>
+  </header>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <main id="reader">
+    <div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="1" loading="lazy" src="panels/panel_0001.webp" alt="Panel 1" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="2" loading="lazy" src="panels/panel_0002.webp" alt="Panel 2" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="3" loading="lazy" src="panels/panel_0003.webp" alt="Panel 3" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="4" loading="lazy" src="panels/panel_0004.webp" alt="Panel 4" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="5" loading="lazy" src="panels/panel_0005.webp" alt="Panel 5" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="6" loading="lazy" src="panels/panel_0006.webp" alt="Panel 6" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="7" loading="lazy" src="panels/panel_0007.webp" alt="Panel 7" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="8" loading="lazy" src="panels/panel_0008.webp" alt="Panel 8" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="9" loading="lazy" src="panels/panel_0009.webp" alt="Panel 9" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="10" loading="lazy" src="panels/panel_0010.webp" alt="Panel 10" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="11" loading="lazy" src="panels/panel_0011.webp" alt="Panel 11" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="12" loading="lazy" src="panels/panel_0012.webp" alt="Panel 12" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="13" loading="lazy" src="panels/panel_0013.webp" alt="Panel 13" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="14" loading="lazy" src="panels/panel_0014.webp" alt="Panel 14" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="15" loading="lazy" src="panels/panel_0015.webp" alt="Panel 15" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="16" loading="lazy" src="panels/panel_0016.webp" alt="Panel 16" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="17" loading="lazy" src="panels/panel_0017.webp" alt="Panel 17" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="18" loading="lazy" src="panels/panel_0018.webp" alt="Panel 18" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="19" loading="lazy" src="panels/panel_0019.webp" alt="Panel 19" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="20" loading="lazy" src="panels/panel_0020.webp" alt="Panel 20" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="21" loading="lazy" src="panels/panel_0021.webp" alt="Panel 21" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="22" loading="lazy" src="panels/panel_0022.webp" alt="Panel 22" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="23" loading="lazy" src="panels/panel_0023.webp" alt="Panel 23" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="24" loading="lazy" src="panels/panel_0024.webp" alt="Panel 24" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="25" loading="lazy" src="panels/panel_0025.webp" alt="Panel 25" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="26" loading="lazy" src="panels/panel_0026.webp" alt="Panel 26" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="27" loading="lazy" src="panels/panel_0027.webp" alt="Panel 27" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="28" loading="lazy" src="panels/panel_0028.webp" alt="Panel 28" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="29" loading="lazy" src="panels/panel_0029.webp" alt="Panel 29" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="30" loading="lazy" src="panels/panel_0030.webp" alt="Panel 30" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="31" loading="lazy" src="panels/panel_0031.webp" alt="Panel 31" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="32" loading="lazy" src="panels/panel_0032.webp" alt="Panel 32" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="33" loading="lazy" src="panels/panel_0033.webp" alt="Panel 33" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="34" loading="lazy" src="panels/panel_0034.webp" alt="Panel 34" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="35" loading="lazy" src="panels/panel_0035.webp" alt="Panel 35" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="36" loading="lazy" src="panels/panel_0036.webp" alt="Panel 36" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="37" loading="lazy" src="panels/panel_0037.webp" alt="Panel 37" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="38" loading="lazy" src="panels/panel_0038.webp" alt="Panel 38" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="39" loading="lazy" src="panels/panel_0039.webp" alt="Panel 39" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="40" loading="lazy" src="panels/panel_0040.webp" alt="Panel 40" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="41" loading="lazy" src="panels/panel_0041.webp" alt="Panel 41" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="42" loading="lazy" src="panels/panel_0042.webp" alt="Panel 42" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="43" loading="lazy" src="panels/panel_0043.webp" alt="Panel 43" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="44" loading="lazy" src="panels/panel_0044.webp" alt="Panel 44" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="45" loading="lazy" src="panels/panel_0045.webp" alt="Panel 45" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="46" loading="lazy" src="panels/panel_0046.webp" alt="Panel 46" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="47" loading="lazy" src="panels/panel_0047.webp" alt="Panel 47" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="48" loading="lazy" src="panels/panel_0048.webp" alt="Panel 48" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="49" loading="lazy" src="panels/panel_0049.webp" alt="Panel 49" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="50" loading="lazy" src="panels/panel_0050.webp" alt="Panel 50" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="51" loading="lazy" src="panels/panel_0051.webp" alt="Panel 51" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="52" loading="lazy" src="panels/panel_0052.webp" alt="Panel 52" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="53" loading="lazy" src="panels/panel_0053.webp" alt="Panel 53" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="54" loading="lazy" src="panels/panel_0054.webp" alt="Panel 54" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="55" loading="lazy" src="panels/panel_0055.webp" alt="Panel 55" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="56" loading="lazy" src="panels/panel_0056.webp" alt="Panel 56" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="57" loading="lazy" src="panels/panel_0057.webp" alt="Panel 57" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="58" loading="lazy" src="panels/panel_0058.webp" alt="Panel 58" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="59" loading="lazy" src="panels/panel_0059.webp" alt="Panel 59" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="60" loading="lazy" src="panels/panel_0060.webp" alt="Panel 60" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="61" loading="lazy" src="panels/panel_0061.webp" alt="Panel 61" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="62" loading="lazy" src="panels/panel_0062.webp" alt="Panel 62" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="63" loading="lazy" src="panels/panel_0063.webp" alt="Panel 63" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="64" loading="lazy" src="panels/panel_0064.webp" alt="Panel 64" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="65" loading="lazy" src="panels/panel_0065.webp" alt="Panel 65" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="66" loading="lazy" src="panels/panel_0066.webp" alt="Panel 66" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="67" loading="lazy" src="panels/panel_0067.webp" alt="Panel 67" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="68" loading="lazy" src="panels/panel_0068.webp" alt="Panel 68" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="69" loading="lazy" src="panels/panel_0069.webp" alt="Panel 69" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="70" loading="lazy" src="panels/panel_0070.webp" alt="Panel 70" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="71" loading="lazy" src="panels/panel_0071.webp" alt="Panel 71" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="72" loading="lazy" src="panels/panel_0072.webp" alt="Panel 72" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="73" loading="lazy" src="panels/panel_0073.webp" alt="Panel 73" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="74" loading="lazy" src="panels/panel_0074.webp" alt="Panel 74" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="75" loading="lazy" src="panels/panel_0075.webp" alt="Panel 75" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="76" loading="lazy" src="panels/panel_0076.webp" alt="Panel 76" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="77" loading="lazy" src="panels/panel_0077.webp" alt="Panel 77" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="78" loading="lazy" src="panels/panel_0078.webp" alt="Panel 78" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="79" loading="lazy" src="panels/panel_0079.webp" alt="Panel 79" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="80" loading="lazy" src="panels/panel_0080.webp" alt="Panel 80" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel" data-idx="81" loading="lazy" src="panels/panel_0081.webp" alt="Panel 81" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="true"><img class="webtoon-panel wide-panel" data-idx="82" loading="lazy" src="panels/panel_0082.webp" alt="Panel 82" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="83" loading="lazy" src="panels/panel_0083.webp" alt="Panel 83" onclick="openZoomModal(this.src)"></div><div class="panel-wrapper" data-wide="false"><img class="webtoon-panel full-page-panel" data-idx="84" loading="lazy" src="panels/panel_0084.webp" alt="Panel 84" onclick="openZoomModal(this.src)"></div>
+    
+    <div class="chapter-end">
+      <h3>End of Chapter 109</h3>
+      <p>Formatted for Mobile Phone Webtoon Viewing</p>
+      <div class="end-actions">
+        <a href="../ch110/" class="end-nav-btn primary">Next Chapter ➔</a>
+      </div>
+    </div>
+  </main>
+
+  <footer id="footer">
+    <a class="nav-btn " href="../ch108/">‹ Prev Chapter</a>
+    <a class="nav-btn" href="../index.html">📑 All Chapters</a>
+    <a class="nav-btn primary " href="../ch110/">Next Chapter ›</a>
+  </footer>
+
+  <!-- Tap-to-Zoom Modal -->
+  <div id="zoomModal" onclick="closeZoomModal()">
+    <div class="zoom-hint">Tap anywhere to close • Pinch to zoom</div>
+    <img id="zoomImage" src="" alt="Zoomed Panel">
+  </div>
+
+  <script>
+    const progressBar = document.getElementById('progressBar');
+    const counter = document.getElementById('counter');
+    const panels = document.querySelectorAll('.webtoon-panel');
+    const totalPanels = 84;
+    const zoomModal = document.getElementById('zoomModal');
+    const zoomImage = document.getElementById('zoomImage');
+    const rotateToggle = document.getElementById('rotateToggle');
+
+    // Toggle 90-degree rotation for wide panels
+    let rotateWideMode = false;
+    function toggleWideRotation() {
+      rotateWideMode = !rotateWideMode;
+      document.body.classList.toggle('rotate-wide-mode', rotateWideMode);
+      rotateToggle.classList.toggle('active', rotateWideMode);
+    }
+
+    // Lightbox Zoom
+    function openZoomModal(src) {
+      zoomImage.src = src;
+      zoomModal.classList.add('active');
+    }
+    function closeZoomModal() {
+      zoomModal.classList.remove('active');
+      zoomImage.src = '';
+    }
+
+    // Scroll progress & panel counter
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / (scrollHeight || 1)) * 100;
+      progressBar.style.width = Math.min(scrollPercent, 100) + '%';
+
+      const midScreen = window.innerHeight / 2;
+      for (let p of panels) {
+        const rect = p.getBoundingClientRect();
+        if (rect.top <= midScreen && rect.bottom >= midScreen) {
+          counter.textContent = p.getAttribute('data-idx') + '/' + totalPanels;
+          break;
+        }
+      }
+    }, { passive: true });
+  </script>
+</body>
+</html>
