@@ -1,0 +1,100 @@
+[
+  {
+    "page": "page_004.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_005.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_006.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_007.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_008.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_009.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_010.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_011.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_012.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_013.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_014.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_015.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_016.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_017.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  }
+]
