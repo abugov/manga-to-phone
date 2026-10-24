@@ -112,5 +112,35 @@
     "title": "Chapter 18",
     "slug": "ch018",
     "panel_count": 78
+  },
+  {
+    "number": 19.0,
+    "title": "Chapter 19",
+    "slug": "ch019",
+    "panel_count": 85
+  },
+  {
+    "number": 20.0,
+    "title": "Chapter 20",
+    "slug": "ch020",
+    "panel_count": 75
+  },
+  {
+    "number": 21.0,
+    "title": "Chapter 21",
+    "slug": "ch021",
+    "panel_count": 84
+  },
+  {
+    "number": 22.0,
+    "title": "Chapter 22",
+    "slug": "ch022",
+    "panel_count": 84
+  },
+  {
+    "number": 23.0,
+    "title": "Chapter 23",
+    "slug": "ch023",
+    "panel_count": 83
   }
 ]

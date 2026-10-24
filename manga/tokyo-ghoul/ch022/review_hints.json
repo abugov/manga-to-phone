@@ -1,0 +1,23 @@
+[
+  {
+    "page": "page_007.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_018.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  },
+  {
+    "page": "page_019.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "No horizontal gutters found; page is a single full-page illustration or splash cover.",
+    "confidence": "high"
+  }
+]
