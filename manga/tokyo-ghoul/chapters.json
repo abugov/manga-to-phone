@@ -472,5 +472,35 @@
     "title": "Chapter 77",
     "slug": "ch077",
     "panel_count": 48
+  },
+  {
+    "number": 78.0,
+    "title": "Chapter 78",
+    "slug": "ch078",
+    "panel_count": 52
+  },
+  {
+    "number": 79.0,
+    "title": "Chapter 79",
+    "slug": "ch079",
+    "panel_count": 64
+  },
+  {
+    "number": 80.0,
+    "title": "Chapter 80",
+    "slug": "ch080",
+    "panel_count": 68
+  },
+  {
+    "number": 81.0,
+    "title": "Chapter 81",
+    "slug": "ch081",
+    "panel_count": 74
+  },
+  {
+    "number": 82.0,
+    "title": "Chapter 82",
+    "slug": "ch082",
+    "panel_count": 63
   }
 ]

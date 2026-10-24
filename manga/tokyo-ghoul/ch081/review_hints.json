@@ -1,0 +1,9 @@
+[
+  {
+    "page": "page_002.jpg",
+    "status": "fallback",
+    "is_fallback": true,
+    "reason": "Table of Contents / text list detected (white ratio=0.63, gutters=6); kept as full_page.",
+    "confidence": "high"
+  }
+]
