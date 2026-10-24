@@ -622,5 +622,35 @@
     "title": "Chapter 102",
     "slug": "ch102",
     "panel_count": 60
+  },
+  {
+    "number": 103.0,
+    "title": "Chapter 103",
+    "slug": "ch103",
+    "panel_count": 36
+  },
+  {
+    "number": 104.0,
+    "title": "Chapter 104",
+    "slug": "ch104",
+    "panel_count": 50
+  },
+  {
+    "number": 105.0,
+    "title": "Chapter 105",
+    "slug": "ch105",
+    "panel_count": 47
+  },
+  {
+    "number": 106.0,
+    "title": "Chapter 106",
+    "slug": "ch106",
+    "panel_count": 38
+  },
+  {
+    "number": 107.0,
+    "title": "Chapter 107",
+    "slug": "ch107",
+    "panel_count": 48
   }
 ]
