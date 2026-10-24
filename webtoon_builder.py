@@ -2,99 +2,91 @@ import os
 import cv2
 import numpy as np
 from PIL import Image
-from typing import List
+from typing import List, Dict, Any
 
 class WebtoonBuilder:
-    def __init__(self, target_width: int = 800, gutter_height: int = 24, bg_color: tuple = (18, 18, 18)):
+    def __init__(self, target_width: int = 800, webp_quality: int = 82):
         self.target_width = target_width
-        self.gutter_height = gutter_height
-        self.bg_color = bg_color  # Dark background for comfortable reading
+        self.webp_quality = webp_quality
 
     def process_and_save_chapter(
         self,
-        all_panels: List[np.ndarray],
-        output_dir: str,
-        chapter_title: str = "Manga Chapter"
+        panel_data_list: List[Dict[str, Any]],
+        chapter_dir: str,
+        manga_title: str = "Tokyo Ghoul",
+        chapter_title: str = "Chapter 1: Tragedy",
+        chapter_num: int = 1,
+        manga_slug: str = "tokyo-ghoul"
     ):
-        os.makedirs(output_dir, exist_ok=True)
-        panels_dir = os.path.join(output_dir, "panels")
-        strips_dir = os.path.join(output_dir, "strips")
+        os.makedirs(chapter_dir, exist_ok=True)
+        panels_dir = os.path.join(chapter_dir, "panels")
         os.makedirs(panels_dir, exist_ok=True)
-        os.makedirs(strips_dir, exist_ok=True)
         
-        # 1. Scale and save individual panel images
-        panel_filenames = []
-        pil_panels = []
+        # 1. Save panels as WebP
+        panel_records = []
+        print(f"Resizing and saving {len(panel_data_list)} panels to WebP (quality={self.webp_quality})...")
         
-        print(f"Resizing and saving {len(all_panels)} extracted panels...")
-        for idx, panel_cv in enumerate(all_panels):
+        for idx, item in enumerate(panel_data_list):
+            panel_cv = item["image"]
+            p_type = item.get("type", "standard_frame")
+            is_wide = item.get("is_wide", False)
+            
             p_rgb = cv2.cvtColor(panel_cv, cv2.COLOR_BGR2RGB)
             pil_img = Image.fromarray(p_rgb)
             
-            # Scale to target_width
             w, h = pil_img.size
             if w > 0 and h > 0:
                 scale = self.target_width / float(w)
                 new_h = max(int(h * scale), 1)
                 resized = pil_img.resize((self.target_width, new_h), Image.Resampling.LANCZOS)
                 
-                fname = f"panel_{idx+1:04d}.jpg"
+                fname = f"panel_{idx+1:04d}.webp"
                 fpath = os.path.join(panels_dir, fname)
-                resized.save(fpath, quality=90)
+                resized.save(fpath, "WEBP", quality=self.webp_quality, method=4)
                 
-                panel_filenames.append(f"panels/{fname}")
-                pil_panels.append(resized)
+                panel_records.append({
+                    "src": f"panels/{fname}",
+                    "type": p_type,
+                    "is_wide": is_wide or (w / float(h) > 1.35),
+                    "aspect": round(w / float(h), 2),
+                    "idx": idx + 1
+                })
                 
-        # 2. Stitch into vertical strips (chunks up to ~6000px high for optimal mobile GPU texture performance)
-        strip_filenames = []
-        max_strip_height = 6000
-        current_chunk = []
-        current_h = 0
+        # 2. Generate Chapter HTML Reader
+        self._generate_chapter_reader(chapter_dir, manga_title, chapter_title, chapter_num, panel_records)
         
-        strip_idx = 1
-        for p in pil_panels:
-            p_h = p.size[1] + self.gutter_height
-            if current_chunk and (current_h + p_h > max_strip_height):
-                # Save current strip
-                s_name = self._save_strip(current_chunk, current_h, strip_idx, strips_dir)
-                strip_filenames.append(f"strips/{s_name}")
-                strip_idx += 1
-                current_chunk = [p]
-                current_h = p_h
-            else:
-                current_chunk.append(p)
-                current_h += p_h
+        # Calculate saved size
+        total_size_mb = sum(os.path.getsize(os.path.join(panels_dir, os.path.basename(p["src"]))) for p in panel_records) / (1024 * 1024)
+        print(f"[+] Successfully generated Webtoon chapter in: {chapter_dir}")
+        print(f"    - {len(panel_records)} WebP panels ({total_size_mb:.2f} MB total)")
+        print(f"    - Interactive reader: {os.path.join(chapter_dir, 'index.html')}")
+        return panel_records
+
+    def _generate_chapter_reader(self, chapter_dir, manga_title, chapter_title, chapter_num, panels):
+        total = len(panels)
+        
+        # Build panel HTML elements
+        panels_html = []
+        for p in panels:
+            classes = ["webtoon-panel"]
+            if p["is_wide"]:
+                classes.append("wide-panel")
+            if p["type"] == "full_page":
+                classes.append("full-page-panel")
                 
-        if current_chunk:
-            s_name = self._save_strip(current_chunk, current_h, strip_idx, strips_dir)
-            strip_filenames.append(f"strips/{s_name}")
+            cls_str = " ".join(classes)
+            panels_html.append(
+                f'<div class="panel-wrapper" data-wide="{str(p["is_wide"]).lower()}">'
+                f'<img class="{cls_str}" data-idx="{p["idx"]}" loading="lazy" src="{p["src"]}" alt="Panel {p["idx"]}" onclick="openZoomModal(this.src)">'
+                f'</div>'
+            )
             
-        # 3. Generate HTML5 Mobile Reader
-        self._generate_html_reader(output_dir, chapter_title, panel_filenames, strip_filenames)
-        print(f"Successfully generated Webtoon output in: {output_dir}")
-        print(f"  - {len(panel_filenames)} panels")
-        print(f"  - {len(strip_filenames)} vertical strips")
-        print(f"  - Interactive reader: {os.path.join(output_dir, 'index.html')}")
-
-    def _save_strip(self, pil_list, total_h, strip_idx, strips_dir):
-        canvas_h = total_h + self.gutter_height
-        canvas = Image.new("RGB", (self.target_width, canvas_h), (255, 255, 255))
-        y = self.gutter_height // 2
-        for p in pil_list:
-            canvas.paste(p, (0, y))
-            y += p.size[1] + self.gutter_height
-            
-        fname = f"strip_{strip_idx:03d}.jpg"
-        canvas.save(os.path.join(strips_dir, fname), quality=90)
-        return fname
-
-    def _generate_html_reader(self, output_dir, chapter_title, panel_files, strip_files):
         html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>{chapter_title} - Mobile Webtoon Reader</title>
+  <title>{manga_title} - {chapter_title} - Webtoon Reader</title>
   <style>
     * {{
       box-sizing: border-box;
@@ -103,14 +95,16 @@ class WebtoonBuilder:
       -webkit-tap-highlight-color: transparent;
     }}
     body {{
-      background-color: #0d0d0d;
-      color: #e0e0e0;
+      background-color: #0b0b0b;
+      color: #eaeaea;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overflow-x: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      user-select: none;
+      -webkit-user-select: none;
     }}
     /* Top Header Bar */
     header {{
@@ -119,37 +113,84 @@ class WebtoonBuilder:
       left: 0;
       right: 0;
       height: 52px;
-      background: rgba(18, 18, 18, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(14, 14, 14, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
+      padding: 0 12px;
       z-index: 100;
       transition: transform 0.25s ease;
     }}
     header.hidden {{
       transform: translateY(-100%);
     }}
-    .title {{
-      font-size: 15px;
+    .back-btn {{
+      color: #ff4757;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 8px;
+      border-radius: 6px;
+    }}
+    .back-btn:active {{
+      background: rgba(255, 255, 255, 0.1);
+    }}
+    .title-area {{
+      text-align: center;
+      max-width: 45%;
+      overflow: hidden;
+    }}
+    .manga-name {{
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }}
+    .chapter-name {{
+      font-size: 13px;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 70%;
+    }}
+    .controls {{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }}
+    .rotate-toggle {{
+      background: #222;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ddd;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }}
+    .rotate-toggle.active {{
+      background: #ff4757;
+      color: #fff;
+      border-color: #ff4757;
     }}
     .progress-pill {{
-      font-size: 12px;
-      font-weight: 500;
-      background: #2a2a2a;
-      padding: 4px 10px;
-      border-radius: 12px;
-      color: #ff4757;
+      font-size: 11px;
+      font-weight: 600;
+      background: #202020;
+      padding: 5px 8px;
+      border-radius: 8px;
+      color: #aaa;
     }}
-    /* Progress bar */
+    /* Top Progress Bar */
     .progress-bar-container {{
       position: fixed;
       top: 52px;
@@ -165,28 +206,52 @@ class WebtoonBuilder:
       background: linear-gradient(90deg, #ff6b81, #ff4757);
       transition: width 0.1s linear;
     }}
-    /* Reader Container */
+    /* Reader Canvas */
     #reader {{
       width: 100%;
-      max-width: 680px;
+      max-width: 760px;
       margin-top: 52px;
       margin-bottom: 60px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #121212;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+      background-color: #0b0b0b;
+    }}
+    .panel-wrapper {{
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin: 8px 0;
+      position: relative;
     }}
     .webtoon-panel {{
       width: 100%;
       height: auto;
       display: block;
-      margin: 8px 0;
-      background: #1a1a1a;
-      transition: opacity 0.3s ease;
+      cursor: zoom-in;
+      transition: transform 0.25s ease, max-width 0.25s ease;
+      border-radius: 2px;
     }}
-    .webtoon-panel:first-child {{
-      margin-top: 0;
+    /* Wide panel rotation mode (90 degrees landscape for phone tilting) */
+    body.rotate-wide-mode .panel-wrapper[data-wide="true"] {{
+      padding: 60px 0;
+      overflow: visible;
+    }}
+    body.rotate-wide-mode .panel-wrapper[data-wide="true"] .webtoon-panel {{
+      transform: rotate(90deg) scale(1.15);
+      cursor: pointer;
+    }}
+    /* End of Chapter Section */
+    .chapter-end {{
+      padding: 50px 20px 90px 20px;
+      text-align: center;
+      color: #777;
+      font-size: 14px;
+    }}
+    .chapter-end h3 {{
+      color: #fff;
+      font-size: 18px;
+      margin-bottom: 8px;
     }}
     /* Bottom Navigation Bar */
     footer {{
@@ -194,10 +259,10 @@ class WebtoonBuilder:
       bottom: 0;
       left: 0;
       right: 0;
-      height: 54px;
-      background: rgba(18, 18, 18, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      height: 52px;
+      background: rgba(14, 14, 14, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
@@ -211,34 +276,75 @@ class WebtoonBuilder:
     .nav-btn {{
       background: none;
       border: none;
-      color: #fff;
-      font-size: 14px;
+      color: #ccc;
+      font-size: 13px;
       font-weight: 500;
       cursor: pointer;
       padding: 8px 16px;
       border-radius: 8px;
     }}
     .nav-btn:active {{
-      background: #2a2a2a;
-    }}
-    /* End of Chapter banner */
-    .chapter-end {{
-      padding: 40px 20px 80px 20px;
-      text-align: center;
-      color: #888;
-      font-size: 14px;
-    }}
-    .chapter-end h3 {{
+      background: rgba(255, 255, 255, 0.1);
       color: #fff;
-      margin-bottom: 8px;
+    }}
+    /* Zoom Lightbox Modal */
+    #zoomModal {{
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      overflow: auto;
+      touch-action: pan-x pan-y pinch-zoom;
+    }}
+    #zoomModal.active {{
+      display: flex;
+    }}
+    #zoomImage {{
+      max-width: 98vw;
+      max-height: 98vh;
+      object-fit: contain;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+      border-radius: 4px;
+      cursor: zoom-out;
+    }}
+    .zoom-hint {{
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(30, 30, 30, 0.8);
+      color: #fff;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      pointer-events: none;
     }}
   </style>
 </head>
 <body>
 
   <header id="header">
-    <div class="title">{chapter_title}</div>
-    <div class="progress-pill" id="counter">1 / {len(panel_files)}</div>
+    <a href="../index.html" class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Chapters
+    </a>
+
+    <div class="title-area">
+      <div class="manga-name">{manga_title}</div>
+      <div class="chapter-name">{chapter_title}</div>
+    </div>
+
+    <div class="controls">
+      <button id="rotateToggle" class="rotate-toggle" onclick="toggleWideRotation()" title="Rotate wide panels 90 degrees for landscape reading">
+        <span>🔄 90°</span>
+      </button>
+      <div class="progress-pill" id="counter">1/{total}</div>
+    </div>
   </header>
 
   <div class="progress-bar-container">
@@ -246,10 +352,10 @@ class WebtoonBuilder:
   </div>
 
   <main id="reader">
-    {''.join([f'<img class="webtoon-panel" data-idx="{i+1}" loading="lazy" src="{f}" alt="Panel {i+1}">' for i, f in enumerate(panel_files)])}
+    {''.join(panels_html)}
     
     <div class="chapter-end">
-      <h3>End of Chapter</h3>
+      <h3>End of {chapter_title}</h3>
       <p>Formatted for Mobile Phone Webtoon Viewing</p>
     </div>
   </main>
@@ -260,15 +366,24 @@ class WebtoonBuilder:
     <button class="nav-btn" onclick="window.scrollTo({{ top: document.body.scrollHeight, behavior: 'smooth' }})">Bottom</button>
   </footer>
 
+  <!-- Tap-to-Zoom Modal -->
+  <div id="zoomModal" onclick="closeZoomModal()">
+    <div class="zoom-hint">Tap anywhere to close • Pinch to zoom</div>
+    <img id="zoomImage" src="" alt="Zoomed Panel">
+  </div>
+
   <script>
-    let lastScroll = 0;
     const header = document.getElementById('header');
     const footer = document.getElementById('footer');
     const progressBar = document.getElementById('progressBar');
     const counter = document.getElementById('counter');
     const panels = document.querySelectorAll('.webtoon-panel');
-    const totalPanels = {len(panel_files)};
+    const totalPanels = {total};
+    const zoomModal = document.getElementById('zoomModal');
+    const zoomImage = document.getElementById('zoomImage');
+    const rotateToggle = document.getElementById('rotateToggle');
 
+    // UI Bars Auto-hide on scroll
     let uiVisible = true;
     function toggleBars() {{
       uiVisible = !uiVisible;
@@ -276,36 +391,441 @@ class WebtoonBuilder:
       footer.classList.toggle('hidden', !uiVisible);
     }}
 
-    window.addEventListener('click', (e) => {{
-      // Tap center of screen to toggle UI bars
-      if (e.target.tagName !== 'BUTTON') {{
-        toggleBars();
-      }}
-    }});
+    // Toggle 90-degree rotation for wide panels
+    let rotateWideMode = false;
+    function toggleWideRotation() {{
+      rotateWideMode = !rotateWideMode;
+      document.body.classList.toggle('rotate-wide-mode', rotateWideMode);
+      rotateToggle.classList.toggle('active', rotateWideMode);
+    }}
 
+    // Lightbox Zoom
+    function openZoomModal(src) {{
+      zoomImage.src = src;
+      zoomModal.classList.add('active');
+    }}
+    function closeZoomModal() {{
+      zoomModal.classList.remove('active');
+      zoomImage.src = '';
+    }}
+
+    // Scroll progress & panel counter
     window.addEventListener('scroll', () => {{
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       const scrollPercent = (scrollTop / (scrollHeight || 1)) * 100;
-      
       progressBar.style.width = Math.min(scrollPercent, 100) + '%';
 
-      // Update current panel count based on viewport
-      let currentIdx = 1;
       const midScreen = window.innerHeight / 2;
       for (let p of panels) {{
         const rect = p.getBoundingClientRect();
         if (rect.top <= midScreen && rect.bottom >= midScreen) {{
-          currentIdx = p.getAttribute('data-idx');
+          counter.textContent = p.getAttribute('data-idx') + '/' + totalPanels;
           break;
         }}
       }}
-      counter.textContent = currentIdx + ' / ' + totalPanels;
     }}, {{ passive: true }});
   </script>
 </body>
 </html>
 """
-        index_path = os.path.join(output_dir, "index.html")
-        with open(index_path, "w", encoding="utf-8") as f:
+        with open(os.path.join(chapter_dir, "index.html"), "w", encoding="utf-8") as f:
             f.write(html_content)
+
+    @staticmethod
+    def generate_manga_index(
+        manga_dir: str,
+        manga_title: str,
+        synopsis: str,
+        cover_rel_path: str,
+        chapters: List[Dict[str, Any]]
+    ):
+        """Level 2: Generates Manga series page with chapter list."""
+        os.makedirs(manga_dir, exist_ok=True)
+        
+        chapter_rows = []
+        for ch in chapters:
+            chapter_rows.append(
+                f'<a href="./{ch["slug"]}/" class="chapter-card">'
+                f'  <div class="ch-left">'
+                f'    <div class="ch-num">CH. {ch["number"]:02d}</div>'
+                f'    <div class="ch-info">'
+                f'      <div class="ch-title">{ch["title"]}</div>'
+                f'      <div class="ch-meta">{ch["panel_count"]} Mobile Panels • Webtoon Format</div>'
+                f'    </div>'
+                f'  </div>'
+                f'  <div class="ch-arrow">➔</div>'
+                f'</a>'
+            )
+            
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>{manga_title} - Chapters - Manga-to-Phone</title>
+  <style>
+    * {{
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }}
+    body {{
+      background-color: #0b0b0b;
+      color: #eaeaea;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px;
+    }}
+    header {{
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }}
+    .back-link {{
+      color: #ff4757;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }}
+    .manga-header {{
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      gap: 20px;
+      background: #141414;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }}
+    .cover-box {{
+      width: 110px;
+      min-width: 110px;
+      height: 160px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #222;
+    }}
+    .cover-box img {{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }}
+    .manga-details {{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }}
+    .status-tag {{
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #ff4757;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }}
+    h1 {{
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #fff;
+    }}
+    .synopsis {{
+      font-size: 13px;
+      color: #888;
+      line-height: 1.45;
+    }}
+    /* Chapter List */
+    .chapter-section {{
+      width: 100%;
+      max-width: 640px;
+    }}
+    .section-title {{
+      font-size: 15px;
+      font-weight: 700;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }}
+    .chapter-list {{
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }}
+    .chapter-card {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #181818;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }}
+    .chapter-card:active, .chapter-card:hover {{
+      transform: translateY(-2px);
+      border-color: rgba(255, 71, 87, 0.5);
+    }}
+    .ch-left {{
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }}
+    .ch-num {{
+      font-size: 14px;
+      font-weight: 800;
+      color: #ff4757;
+      background: rgba(255, 71, 87, 0.12);
+      padding: 6px 10px;
+      border-radius: 8px;
+    }}
+    .ch-title {{
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }}
+    .ch-meta {{
+      font-size: 12px;
+      color: #777;
+    }}
+    .ch-arrow {{
+      color: #ff4757;
+      font-size: 16px;
+    }}
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="../../index.html" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Library
+    </a>
+  </header>
+
+  <div class="manga-header">
+    <div class="cover-box">
+      <img src="{cover_rel_path}" alt="{manga_title} Cover">
+    </div>
+    <div class="manga-details">
+      <div class="status-tag">Japanese Reading Flow (RTL)</div>
+      <h1>{manga_title}</h1>
+      <p class="synopsis">{synopsis}</p>
+    </div>
+  </div>
+
+  <div class="chapter-section">
+    <div class="section-title">Chapters ({len(chapters)})</div>
+    <div class="chapter-list">
+      {''.join(chapter_rows)}
+    </div>
+  </div>
+
+</body>
+</html>
+"""
+        with open(os.path.join(manga_dir, "index.html"), "w", encoding="utf-8") as f:
+            f.write(html)
+
+    @staticmethod
+    def generate_root_library(
+        root_dir: str,
+        manga_list: List[Dict[str, Any]]
+    ):
+        """Level 1: Generates main catalog index page."""
+        os.makedirs(root_dir, exist_ok=True)
+        
+        cards = []
+        for m in manga_list:
+            cards.append(
+                f'<a href="{m["url"]}" class="manga-card">'
+                f'  <div class="cover-wrap">'
+                f'    <img src="{m["cover"]}" alt="{m["title"]} Cover">'
+                f'  </div>'
+                f'  <div class="card-info">'
+                f'    <div class="tag">{m["chapters_count"]} Chapters • Mobile Webtoon</div>'
+                f'    <h2 class="manga-title">{m["title"]}</h2>'
+                f'    <p class="meta-text">{m["desc"]}</p>'
+                f'    <div class="read-btn">'
+                f'      <span>View Chapters</span>'
+                f'      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'
+                f'    </div>'
+                f'  </div>'
+                f'</a>'
+            )
+            
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Manga-to-Phone Webtoon Library</title>
+  <style>
+    * {{
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }}
+    body {{
+      background-color: #0b0b0b;
+      color: #eaeaea;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }}
+    header {{
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      margin-top: 16px;
+      margin-bottom: 28px;
+    }}
+    .badge {{
+      display: inline-block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff4757;
+      border: 1px solid rgba(255, 71, 87, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }}
+    h1 {{
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff 0%, #a4b0be 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }}
+    p.subtitle {{
+      font-size: 14px;
+      color: #777;
+      line-height: 1.5;
+    }}
+    .library {{
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }}
+    .manga-card {{
+      display: flex;
+      background: #141414;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }}
+    .manga-card:hover, .manga-card:active {{
+      transform: translateY(-2px);
+      border-color: rgba(255, 71, 87, 0.4);
+    }}
+    .cover-wrap {{
+      width: 110px;
+      min-width: 110px;
+      height: 155px;
+      background: #222;
+      overflow: hidden;
+    }}
+    .cover-wrap img {{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }}
+    .card-info {{
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
+    }}
+    .tag {{
+      font-size: 11px;
+      font-weight: 600;
+      color: #ff4757;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }}
+    .manga-title {{
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }}
+    .meta-text {{
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }}
+    .read-btn {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ff4757;
+    }}
+    footer {{
+      margin-top: auto;
+      padding-top: 40px;
+      font-size: 12px;
+      color: #555;
+      text-align: center;
+    }}
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge">Mobile Optimized</div>
+    <h1>Manga-to-Phone</h1>
+    <p class="subtitle">Traditional widescreen manga automatically converted into vertical-scrolling smartphone Webtoons.</p>
+  </header>
+
+  <main class="library">
+    {''.join(cards)}
+  </main>
+
+  <footer>
+    <p>Powered by OpenCV &amp; WebP Compression • $0 LLM Cost</p>
+  </footer>
+
+</body>
+</html>
+"""
+        with open(os.path.join(root_dir, "index.html"), "w", encoding="utf-8") as f:
+            f.write(html)

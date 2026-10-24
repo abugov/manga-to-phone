@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Manga-to-Phone Webtoon Reader</title>
+  <title>Manga-to-Phone Webtoon Library</title>
   <style>
     * {
       box-sizing: border-box;
@@ -12,8 +12,8 @@
       -webkit-tap-highlight-color: transparent;
     }
     body {
-      background-color: #0d0d0d;
-      color: #f1f2f6;
+      background-color: #0b0b0b;
+      color: #eaeaea;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       min-height: 100vh;
       display: flex;
@@ -25,8 +25,8 @@
       width: 100%;
       max-width: 600px;
       text-align: center;
-      margin-top: 20px;
-      margin-bottom: 32px;
+      margin-top: 16px;
+      margin-bottom: 28px;
     }
     .badge {
       display: inline-block;
@@ -44,7 +44,6 @@
     h1 {
       font-size: 26px;
       font-weight: 800;
-      letter-spacing: -0.5px;
       margin-bottom: 8px;
       background: linear-gradient(135deg, #ffffff 0%, #a4b0be 100%);
       -webkit-background-clip: text;
@@ -52,7 +51,7 @@
     }
     p.subtitle {
       font-size: 14px;
-      color: #747d8c;
+      color: #777;
       line-height: 1.5;
     }
     .library {
@@ -60,11 +59,11 @@
       max-width: 600px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
     }
     .manga-card {
       display: flex;
-      background: #191919;
+      background: #141414;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
       overflow: hidden;
@@ -81,7 +80,6 @@
       width: 110px;
       min-width: 110px;
       height: 155px;
-      position: relative;
       background: #222;
       overflow: hidden;
     }
@@ -107,7 +105,7 @@
       letter-spacing: 0.5px;
     }
     .manga-title {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 700;
       color: #ffffff;
       margin-bottom: 6px;
@@ -117,6 +115,7 @@
       font-size: 13px;
       color: #888;
       margin-bottom: 14px;
+      line-height: 1.4;
     }
     .read-btn {
       display: inline-flex;
@@ -126,20 +125,11 @@
       font-weight: 600;
       color: #ff4757;
     }
-    .read-btn svg {
-      width: 14px;
-      height: 14px;
-      fill: currentColor;
-      transition: transform 0.2s ease;
-    }
-    .manga-card:hover .read-btn svg {
-      transform: translateX(4px);
-    }
     footer {
       margin-top: auto;
       padding-top: 40px;
       font-size: 12px;
-      color: #57606f;
+      color: #555;
       text-align: center;
     }
   </style>
@@ -153,24 +143,11 @@
   </header>
 
   <main class="library">
-    <a href="./output/tokyo-ghoul/" class="manga-card">
-      <div class="cover-wrap">
-        <img src="./output/tokyo-ghoul/panels/panel_0001.jpg" alt="Tokyo Ghoul Cover">
-      </div>
-      <div class="card-info">
-        <div class="tag">Chapter 1 • 176 Panels</div>
-        <h2 class="manga-title">Tokyo Ghoul: Chapter 1</h2>
-        <p class="meta-text">Japanese Reading Flow (RTL) • Continuous Vertical Scroll</p>
-        <div class="read-btn">
-          <span>Read on Phone</span>
-          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-      </div>
-    </a>
+    <a href="./manga/tokyo-ghoul/" class="manga-card">  <div class="cover-wrap">    <img src="./manga/tokyo-ghoul/ch001/panels/panel_0001.webp" alt="Tokyo Ghoul Cover">  </div>  <div class="card-info">    <div class="tag">1 Chapters • Mobile Webtoon</div>    <h2 class="manga-title">Tokyo Ghoul</h2>    <p class="meta-text">Tokyo Ghoul converted for vertical phone reading with Japanese RTL reading order and wide panel 90° rotation.</p>    <div class="read-btn">      <span>View Chapters</span>      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>    </div>  </div></a>
   </main>
 
   <footer>
-    <p>Powered by OpenCV &amp; Recursive X-Y Cut Panel Segmentation</p>
+    <p>Powered by OpenCV &amp; WebP Compression • $0 LLM Cost</p>
   </footer>
 
 </body>
